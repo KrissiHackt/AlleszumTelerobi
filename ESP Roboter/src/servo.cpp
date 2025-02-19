@@ -41,3 +41,16 @@ void Servoloop()
 
     myservo.write(pos);
 }
+
+int getServoPos()
+{
+    return pos;
+}
+
+void setServo(int pos)
+{
+    if ((pos >= 0) && (pos <= 100))
+    {
+        myservo.write(pos);
+    }
+}

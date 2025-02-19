@@ -1,12 +1,14 @@
 #include "gui.h"
 #include "motorControl.h"
 #include "ultrasonic.h"
+#include "servo.h"
+
 int statusLabelId;
 int graphId;
 int millisLabelId;
 int testSwitchId;
 
-void padExample(Control *sender, int value)
+void steuerungCallbackHandler(Control *sender, int value)
 {
     switch (value)
     {
@@ -66,12 +68,28 @@ void padExample(Control *sender, int value)
     Serial.println(sender->id);
 }
 
+void servoCallbackHandler(Control *sender, int value, void *)
+{
+    switch (value)
+    {
+        case SL_VALUE:
+        {
+            int neigung = sender->value.toInt();
+            setServo(neigung);
+            Serial.printf("set kopf: %d\n", neigung);
+        }
+    }
+}
+
 void setupGui()
 {
     ESPUI.setVerbosity(Verbosity::VerboseJSON);
     Serial.begin(115200);
 
-    ESPUI.pad("Pad without center", &padExample, ControlColor::Carrot);
+    (void)ESPUI.label("Kamera", ControlColor::Carrot, "<img src='http://telecam.local:81/stream' width='320'>");
+    (void)ESPUI.pad("Steuerung", &steuerungCallbackHandler, ControlColor::Carrot);
+    (void)ESPUI.slider("Kopf", &servoCallbackHandler, ControlColor::Carrot, getServoPos(), 0, 100, nullptr);
+    ESPUI.sliderContinuous = true;
 
     /*
      * .begin loads and serves all files from PROGMEM directly.
