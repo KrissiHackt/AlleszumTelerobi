@@ -163,6 +163,21 @@ int berechneAkkuProzent(float spannung) {
     return 0;
 }
 
+void updateBatteryValue(uint16_t elementId, float value, const char* color = "#2196F3") {
+    static const char* batteryValue(
+        R"(<div style="color: #000; background-color: #999; border-radius: 16px;">)"
+            R"(<div style="color: #fff; background-color: %s; padding: 0; border-radius: 16px; white-space: nowrap; min-width: 5%%; width:%.0f%%">)"
+                R"(%.0f %%)"
+            R"(</div>)"
+        R"(</div>)");
+    char buffer[strlen(batteryValue) + 6 + 20];
+    sprintf(buffer, batteryValue, color, value, value);
+    Control* control = ESPUI.getControl(elementId);
+    control->value = buffer;
+    control->elementStyle = "background: transparent";
+    ESPUI.updateControl(control);
+}
+
 void guiLoop()
 {
     static long oldTime = 0;
@@ -190,10 +205,9 @@ void guiLoop()
         // ESPUI.print(millisLabelId, String(distance));
         Receive();
         intAkkuanzeige = berechneAkkuProzent (Feedback.batVoltage/100);
-        ESPUI.updateLabel(batteryLabel, String (intAkkuanzeige) + " % " );
-        if (intAkkuanzeige > 60) { ESPUI.setElementStyle (batteryLabel, "background-color: green;");}
-        if (intAkkuanzeige <=60 && intAkkuanzeige > 30) { ESPUI.setElementStyle (batteryLabel, "background-color: orange;");}
-        if (intAkkuanzeige <=30 && intAkkuanzeige >=0) { ESPUI.setElementStyle (batteryLabel, "background-color: red;");}
+        if (intAkkuanzeige > 60) { updateBatteryValue(batteryLabel, intAkkuanzeige, "green");}
+        if (intAkkuanzeige <=60 && intAkkuanzeige > 30) { updateBatteryValue(batteryLabel, intAkkuanzeige, "orange");}
+        if (intAkkuanzeige <=30 && intAkkuanzeige >=0) { updateBatteryValue(batteryLabel, intAkkuanzeige, "red");}
 
         oldTime = millis();
     }
